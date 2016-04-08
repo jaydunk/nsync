@@ -221,7 +221,6 @@ func (b *BuildpackRecipeBuilder) Build(desiredApp *cc_messages.DesireAppRequestF
 		})
 
 		if err != nil {
-			buildLogger.Error("marshaling-ssh-route-failed", err)
 			return nil, err
 		}
 
@@ -232,6 +231,13 @@ func (b *BuildpackRecipeBuilder) Build(desiredApp *cc_messages.DesireAppRequestF
 
 	setupAction := models.Serial(setup...)
 	actionAction := models.Codependent(actions...)
+
+	var network *models.Network
+	if b.config.NetworkID != "" {
+		network = &models.Network{
+			NetworkID: b.config.NetworkID,
+		}
+	}
 
 	return &models.DesiredLRP{
 		Privileged: true,
@@ -269,6 +275,8 @@ func (b *BuildpackRecipeBuilder) Build(desiredApp *cc_messages.DesireAppRequestF
 		LegacyDownloadUser: "vcap",
 
 		TrustedSystemCertificatesPath: TrustedSystemCertificatesPath,
+
+		Network: network,
 	}, nil
 }
 

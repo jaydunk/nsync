@@ -46,7 +46,11 @@ var _ = Describe("Docker Recipe Builder", func() {
 			},
 		}
 		fakeKeyFactory = &fake_keys.FakeSSHKeyFactory{}
-		config := recipebuilder.Config{lifecycles, "http://file-server.com", fakeKeyFactory}
+		config := recipebuilder.Config{
+			Lifecycles:    lifecycles,
+			FileServerURL: "http://file-server.com",
+			KeyFactory:    fakeKeyFactory,
+		}
 		builder = recipebuilder.NewDockerRecipeBuilder(logger, config)
 	})
 
@@ -147,6 +151,25 @@ var _ = Describe("Docker Recipe Builder", func() {
 			})
 		})
 
+		Context("when the network id is set", func() {
+			BeforeEach(func() {
+				config := recipebuilder.Config{
+					Lifecycles:    lifecycles,
+					FileServerURL: "http://file-server.com",
+					KeyFactory:    fakeKeyFactory,
+					NetworkID:     "some-network-id",
+				}
+				builder = recipebuilder.NewDockerRecipeBuilder(logger, config)
+				desiredLRP, err = builder.Build(&desiredAppReq)
+			})
+			It("it sets the network id on the desired LRP with the log guid", func() {
+				Expect(err).NotTo(HaveOccurred())
+				Expect(desiredLRP.Network).To(Equal(&models.Network{
+					NetworkID: "some-network-id",
+				}))
+			})
+		})
+
 		Context("when everything is correct", func() {
 			It("does not error", func() {
 				Expect(err).NotTo(HaveOccurred())
@@ -171,6 +194,8 @@ var _ = Describe("Docker Recipe Builder", func() {
 				Expect(desiredLRP.EnvironmentVariables).NotTo(ConsistOf(&models.EnvironmentVariable{"LANG", recipebuilder.DefaultLANG}))
 
 				Expect(desiredLRP.MetricsGuid).To(Equal("the-log-id"))
+
+				Expect(desiredLRP.Network).To(BeNil())
 
 				expectedCachedDependencies := []*models.CachedDependency{}
 				expectedCachedDependencies = append(expectedCachedDependencies, &models.CachedDependency{

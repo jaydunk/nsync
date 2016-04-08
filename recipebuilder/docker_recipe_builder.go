@@ -240,6 +240,13 @@ func (b *DockerRecipeBuilder) Build(desiredApp *cc_messages.DesireAppRequestFrom
 
 	actionAction := models.Codependent(actions...)
 
+	var network *models.Network
+	if b.config.NetworkID != "" {
+		network = &models.Network{
+			NetworkID: b.config.NetworkID,
+		}
+	}
+
 	return &models.DesiredLRP{
 		Privileged: privilegedContainer,
 
@@ -275,6 +282,8 @@ func (b *DockerRecipeBuilder) Build(desiredApp *cc_messages.DesireAppRequestFrom
 		LegacyDownloadUser: user,
 
 		TrustedSystemCertificatesPath: TrustedSystemCertificatesPath,
+
+		Network: network,
 	}, nil
 }
 

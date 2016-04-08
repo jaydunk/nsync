@@ -41,6 +41,7 @@ type Config struct {
 	Lifecycles    map[string]string
 	FileServerURL string
 	KeyFactory    keys.SSHKeyFactory
+	NetworkID     string
 }
 
 //go:generate counterfeiter -o ../bulk/fakes/fake_recipe_builder.go . RecipeBuilder
